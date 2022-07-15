@@ -1,0 +1,24 @@
+[package]
+name = "regression"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+itertools="0.10.3"
+petal-clustering="0.5.1"
+petal-neighbors="0.8.0"
+plotlib="0.5.1"
+ndarray="0.15.4"
+csv="1.1.6"
+
+# para la test normal
+statrs="0.15.0"
+slice="0.0.4"
+
+# borrar archivos
+glob="0.3.0"
+
+
+
