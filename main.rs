@@ -22,114 +22,81 @@ use itertools::Itertools;
 use statrs::distribution::{ChiSquared, Continuous};
 use statrs::statistics::Statistics;
 
-// grafica de codo para epsilon
-// https://stackoverflow.com/questions/43160240/how-to-plot-a-k-distance-graph-in-python
-//
-// El valor de épsilon se puede decidir a partir del gráfico de distancia K.
-// El punto de máxima curvatura (codo) en este gráfico nos habla del valor de épsilon.
-// Si el valor de épsilon elegido es demasiado pequeño, se creará una mayor cantidad de grupos
-// y se tomarán más puntos de datos como ruido. Mientras que, si se elige demasiado grande,
-// varios grupos pequeños se fusionarán en un grupo grande y perderemos detalles.
-// https://www.analyticsvidhya.com/blog/2020/09/how-dbscan-clustering-works/
-fn calcular_kn_distancia(x: &Vec<f64>, y: &Vec<f64>) -> f64 {
+// cañcular la maxima curvatura (codo)
+fn calcular_kn_distancia(xx: &Vec<f64>, yy: &Vec<f64>) -> f64 {
     let mut kn_dist = Vec::new();
     let mut sum: f64;
-    let mut dcop: Vec<f64> = Vec::new(); // distancias sin ordenar
+    let mut y: Vec<f64> = yy.clone();
+    let mut x: Vec<f64> = xx.clone();
+
+    // ordenar los vectores x,y con base a y
+    let mut aswap1: f64;
+    let mut aswap2: f64;
+    for _j in 0..y.len() - 1 {
+        for i in 0..y.len() - 1 {
+            if y[i] > y[i + 1] {
+                aswap1 = y[i];
+                aswap2 = y[i + 1];
+                y[i] = aswap2;
+                y[i + 1] = aswap1;
+                aswap1 = x[i];
+                aswap2 = x[i + 1];
+                x[i] = aswap2;
+                x[i + 1] = aswap1;
+            }
+        }
+    }
+
+    //println!("<<<< y {:?}", y);
+    //println!("<<<< x {:?}", x);
     for i in 0..x.len() - 1 {
         sum = f64::powf(x[i] - x[i + 1], 2f64);
         sum += f64::powf(y[i] - y[i + 1], 2f64);
         sum = f64::powf(sum, 0.5);
 
-        dcop.push(sum);
-
         kn_dist.push(sum);
     }
     kn_dist.sort_by(cmp_f64);
+    // println!(" distancias : {:?}", kn_dist);
+    // calcular las pendientes del vector ordenado
+    let mut pendientes: Vec<f64> = Vec::new();
+    for i in 0..kn_dist.len() - 1 {
+        pendientes.push((kn_dist[i + 1] - kn_dist[i]) / ((i as f64 + 1.0) - i as f64));
+    }
 
-    let mut ycop = y.clone();
-    ycop.remove(0); //borrar el primer dato
-                    /*
-                        println!(
-                            "_______ y={:?}  dcop{:?} ly={} ldcop={}",
-                            ycop,
-                            dcop,
-                            ycop.len(),
-                            dcop.len()
-                        );
-                    */
-    // calcular las frecuencias de cada valor
-    let mut frec: Vec<i32> = Vec::new();
-    let mut val: Vec<f64> = Vec::new();
-    let cop = kn_dist.clone();
-    let mut cc: f64 = kn_dist[0];
+    // ordenar los vectores pendiente,kn_dist con base a pendiente
 
-    let mut cont: usize = 0usize;
-    for i in kn_dist {
-        if cont == 0 {
-            val.push(cc);
-            let frecuencies = cop.iter().filter(|&n| *n == i).count();
-            frec.push(frecuencies as i32);
-        } else {
-            if cop[cont] != cc {
-                cc = cop[cont];
-                val.push(cc);
-                let frecuencies = cop.iter().filter(|&n| *n == i).count();
-                frec.push(frecuencies as i32);
+    for _j in 0..pendientes.len() - 1 {
+        for i in 0..pendientes.len() - 1 {
+            if pendientes[i] > pendientes[i + 1] {
+                aswap1 = pendientes[i];
+                aswap2 = pendientes[i + 1];
+                pendientes[i] = aswap2;
+                pendientes[i + 1] = aswap1;
+                aswap1 = kn_dist[i];
+                aswap2 = kn_dist[i + 1];
+                kn_dist[i] = aswap2;
+                kn_dist[i + 1] = aswap1;
             }
         }
-        cont += 1;
     }
-    /*println!(
-            " Distancias sin rep. y Frecuencias \n {:?} \n {:?}",
-            val, frec
-        );
-    */
-    // Tomando en cuenta el método prpuesto en
-    // https://datascience.stackexchange.com/questions/57122/in-elbow-curve-how-to-find-the-point-from-where-the-curve-starts-to-rise
-    // Data Science, 12 nov 2019. Sajjad Manal.
-    // que ordena las distancias de cada punto (aquí se simplificó con sus valores únicos obtenidos por frecuencias),
-    // se crea un recta con el punto final e inicial
-    // de acuerdo con Detecting knee-/elbow points in graph en
-    // https://towardsdatascience.com/detecting-knee-elbow-points-in-a-graph-d13fc517a63c
-    // Daniel Kleine, Mayo 27, 2021.  consultado el 13 de julio de 2022.
-    // posteriormente se obtuvo la distancia de cada punto anterior con la recta mencionada,
-    // se obtuvo la máxima distincia que define "la máxima curvatura",
-    // se relaciona con la distancia anterior para proponer el valor de epsilon.
-    //
-
-    val.sort_by(cmp_f64);
-    println!(" val ord {:?}", val);
-
-    // encontrar la máxima distancia de todos los puntos a una recta
-    // puntos de la recta
-    let ly1 = val[0];
-    let lx1 = 1.0;
-    let long = val.len();
-    let ly2 = val[long - 1];
-    let lx2 = val.len() as f64;
-
-    // recta
-    let a = (ly2 - ly1) / (lx2 - lx1);
-    let b = -1.0;
-    let c = -1.0 * lx1 * a + ly1;
-    // distancias a obtener
+    // buscar la pendiente 1%
+    let mut epsi = 0f64;
+    let mut m: Vec<f64> = Vec::new();
     let mut d: Vec<f64> = Vec::new();
-    for j in 0..val.len() - 1 {
-        // punto
-        let py1 = val[j];
-        let px1 = j as f64;
-        //distancia del punto anterior con la recta
-        let nume = a * px1 + b * py1 + c;
-        let deno = f64::powf(f64::powf(a, 2.0) + f64::powf(b, 2.0), 0.5);
-        let dd = (nume / deno).abs();
-        d.push(dd);
+    for i in 0..pendientes.len() - 1 {
+        if pendientes[i] != pendientes[i + 1] {
+            m.push(pendientes[i]);
+            d.push(kn_dist[i]);
+        }
     }
-    //println!("nuevas distancias {:?}", d);
-    let lsx = d.iter().cloned().fold(0. / 0., f64::max); //maximo
-    let mut epsi: f64 = 0f64;
-    for j in 0..d.len() {
-        if lsx <= d[j] {
-            epsi = val[j];
+    //println!(" pendientes.... {:?}", pendientes);
+    //println!(" distancias.... {:?}", d);
+    //println!(" pendientes.... {:?}", m);
+    for i in 0..m.len() {
+        if m[i] >= 1.0 {
+            epsi = d[i];
+            break;
         }
     }
     println!(" epsilon para DBSCAN es {}", epsi);
@@ -236,7 +203,9 @@ pub fn dago_pear_k2(x: &mut Vec<f64>) -> bool {
             return false;
         }
     } else {
-        println!("  Existe algún tipo de problema y no se puede probar la normalidad ...");
+        println!(
+            "  Existe algún tipo de problema y no se puede probar la normalidad en residuales ..."
+        );
         return false;
     }
 }
@@ -458,10 +427,11 @@ fn graficar(x_values: &Vec<f64>, y_values: &Vec<f64>, nombre: String, x: &Vec<f6
     }
 
     // límites de los ejes de coordenadas de la gráfica
-    let lsx = x.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let lix = x.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
-    let lsy = y.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let liy = y.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
+
+    let lsx: f64 = Statistics::max(x.iter()) + 1.0;
+    let lix: f64 = Statistics::min(x.iter()) - 1.0;
+    let lsy: f64 = Statistics::max(y.iter()) + 1.0;
+    let liy: f64 = Statistics::min(y.iter()) - 1.0;
 
     /*let plot_actual = Scatter::from_vec(&actual)
         .style(scatter::Style::new()
@@ -549,10 +519,10 @@ fn graficar4(x_values: &Vec<f64>, y_values: &Vec<f64>, nombre: String, x: &Vec<f
     }
 
     // límites de los ejes de coordenadas de la gráfica
-    let lsx = x.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let lix = x.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
-    let lsy = y.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let liy = y.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
+    let lsx = Statistics::max(x.iter()) + 1.0; //maximo
+    let lix = Statistics::min(x.iter()) - 1.0; //minimo
+    let lsy = Statistics::max(y.iter()) + 1.0; //maximo
+    let liy = Statistics::min(y.iter()) - 1.0; //minimo
 
     /*let plot_actual = Scatter::from_vec(&actual)
         .style(scatter::Style::new()
@@ -604,10 +574,10 @@ fn graficar4(x_values: &Vec<f64>, y_values: &Vec<f64>, nombre: String, x: &Vec<f
 }
 fn graficar2(x_values: &Vec<f64>, y_values: &Vec<f64>, x: &Vec<f64>, y: &Vec<f64>, nombre: String) {
     // límites de los ejes de coordenadas de la gráfica
-    let lsx = x.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let lix = x.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
-    let lsy = y.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let liy = y.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
+    let lsx = Statistics::max(x.iter()) + 1.0; //maximo
+    let lix = Statistics::min(x.iter()) - 1.0; //minimo
+    let lsy = Statistics::max(y.iter()) + 1.0; //maximo
+    let liy = Statistics::min(y.iter()) - 1.0; //minimo
 
     let mut actual: Vec<(f64, f64)> = Vec::new();
     let mut fuera: Vec<(f64, f64)> = Vec::new();
@@ -647,10 +617,10 @@ fn graficar2(x_values: &Vec<f64>, y_values: &Vec<f64>, x: &Vec<f64>, y: &Vec<f64
 }
 fn graficar5(x_values: &Vec<f64>, y_values: &Vec<f64>, x: &Vec<f64>, y: &Vec<f64>, nombre: String) {
     // límites de los ejes de coordenadas de la gráfica
-    let lsx = x.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let lix = x.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
-    let lsy = y.iter().cloned().fold(0. / 0., f64::max) + 1.0; //maximo
-    let liy = y.iter().cloned().fold(0. / 0., f64::min) - 1.0; //minimo
+    let lsx = Statistics::max(x.iter()) + 1.0; //maximo
+    let lix = Statistics::min(x.iter()) - 1.0; //minimo
+    let lsy = Statistics::max(y.iter()) + 1.0; //maximo
+    let liy = Statistics::min(y.iter()) - 1.0; //minimo
 
     let mut actual: Vec<(f64, f64)> = Vec::new();
     let mut fuera: Vec<(f64, f64)> = Vec::new();
@@ -698,8 +668,6 @@ pub fn residuos(act: &Vec<f64>, est: &Vec<f64>) -> Vec<f64> {
     }
     if dago_pear_k2(&mut residuales) {
         println!(" Los residuales SI tienen distribución normal.")
-    } else {
-        println!(" Los residuales NO tienen distribución normal.")
     }
 
     return residuales;
@@ -716,10 +684,9 @@ pub fn bandas(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
         let mut xx: Vec<f64> = Vec::new();
         let mut id: Vec<String> = Vec::new();
         // límites de x e y
-        //let lsx = x.iter().cloned().fold(0. / 0., f64::max); //maximo
-        //let lix = x.iter().cloned().fold(0. / 0., f64::min); //minimo
-        let lsy = y.iter().cloned().fold(0. / 0., f64::max); //maximo
-        let liy = y.iter().cloned().fold(0. / 0., f64::min); //minimo
+        let lsy = Statistics::max(y.iter()); //maximo
+        let liy = Statistics::min(y.iter()); //minimo
+
         let fin = lsy;
         let mut contador: u32 = 0;
         escala = liy;
@@ -738,6 +705,9 @@ pub fn bandas(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
                 println!(">>> y tomadas para la banda {:?}", yy);
                 println!(">>> x tomada para la banda {:?}", xx);
                 println!(">>> id correspondiente {:?}", id);
+                let maxy = Statistics::max(yy.iter());
+                let miny = Statistics::min(yy.iter());
+                println!("  y  max={} min={}", maxy, miny);
 
                 let residuales = yy.clone();
 
@@ -797,10 +767,9 @@ pub fn bandas4(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
         let mut xx: Vec<f64> = Vec::new();
         let mut id: Vec<String> = Vec::new();
         // límites de x e y
-        //let lsx = x.iter().cloned().fold(0. / 0., f64::max); //maximo
-        //let lix = x.iter().cloned().fold(0. / 0., f64::min); //minimo
-        let lsy = y.iter().cloned().fold(0. / 0., f64::max); //maximo
-        let liy = y.iter().cloned().fold(0. / 0., f64::min); //minimo
+
+        let lsy = Statistics::max(y.iter()); //maximo
+        let liy = Statistics::min(y.iter()); //minimo
         let fin = lsy;
         let mut contador: u32 = 0;
         escala = liy;
@@ -819,6 +788,9 @@ pub fn bandas4(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
                 println!("B>>> y tomadas para la banda {:?}", yy);
                 println!("B>>> x tomada para la banda {:?}", xx);
                 println!("B>>> id correspondiente {:?}", id);
+                let maxy = Statistics::max(yy.iter());
+                let miny = Statistics::min(yy.iter());
+                println!("  y  max={} min={}", maxy, miny);
 
                 let residuales = yy.clone();
 
@@ -912,7 +884,8 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         points.row_mut(i)[0] = x[i];
         points.row_mut(i)[1] = y[i];
     }
-    println!(">>> Datos que se pasaran a DBSCAN ...\n{:?}", points);
+    //println!(">>> Datos que se pasaran a DBSCAN ...\n{:?}", points);
+    println!("\n\n___\n>>> Inicia DBSCAN ...\n");
 
     // vectores para los clusters encontrados
     let mut yy: Vec<f64> = Vec::new(); // variable dependiente
@@ -946,6 +919,9 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         println!(" == y -> {:?}", yy);
         println!(" == x -> {:?}", xx);
         println!(" == id-> {:?}", id);
+        let maxy = Statistics::max(yy.iter());
+        let miny = Statistics::min(yy.iter());
+        println!("  y  max={} min={}", maxy, miny);
         // crear modelo lineal ---------------
 
         //let intercept = tuple.0;
@@ -995,7 +971,10 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         yy.clear();
         id.clear();
     }
-    println!("\n DBSCAN: Puntos fuera de clusters {:?}", clustering.1); // [25.0, 80.0] doesn't belong to any cluster
+    println!(
+        "\n___\n DBSCAN: Puntos fuera de clusters {:?}",
+        clustering.1
+    ); // [25.0, 80.0] doesn't belong to any cluster
     xx.clear();
     yy.clear();
     id.clear();
@@ -1007,6 +986,9 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
     println!(" y: {:?}", yy);
     println!(" x: {:?}", xx);
     println!(" id:{:?}", id);
+    let maxy = Statistics::max(yy.iter());
+    let miny = Statistics::min(yy.iter());
+    println!("  y  max={} min={}", maxy, miny);
     let result = "puntos_fuera_por_DBSCAN.svg";
     graficar2(&xx, &yy, &x, &y, result.to_string());
 }
@@ -1056,17 +1038,19 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         points.row_mut(i)[0] = x[i];
         points.row_mut(i)[1] = y[i];
     }
-    println!(">>> B Datos que se pasaran a DBSCAN ...\n{:?}", points);
-
-    // vectores para los clusters encontrados
+    //println!("\n\n>>> B inicia DBSCAN con épsilon = 3...\n{:?}", points);
+    println!("\n\n___\n>>> B inicia DBSCAN con épsilon = 3"); // de acuerdo con https://www.asep.org/asep/asep/Robergs2.pdf
+    println!(">>> B inicia DBSCAN min_samples = 4..."); // aquí se usó https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf ester
+                                                        // usar el numero de veces que se toma la FC a cada persona en el experimento
+                                                        // vectores para los clusters encontrados
     let mut yy: Vec<f64> = Vec::new(); // variable dependiente
     let mut xx: Vec<f64> = Vec::new(); // variable independiente
     let mut id: Vec<String> = Vec::new(); // identificadores
 
-    // radio de vecindad = 2.0=eps
-    // El número mínimo de puntos necesarios para formar una región densa = 3=min_samples
-    let min_s = 3i32; // minimo de puntos en cluster
-    let epsi = 3f64; //
+    // radio de vecindad = 3.0=eps
+    // El número mínimo de puntos necesarios para formar una región densa = 4=min_samples
+    let min_s = 4i32; // minimo de puntos en cluster de acuerdo a https://www.aaai.org/Papers/KDD/1996/KDD96-037.pdf
+    let epsi = 3f64; //  https://www.asep.org/asep/asep/Robergs2.pdf
 
     let clustering =
         Dbscan::new(epsi, min_s.try_into().unwrap(), Euclidean::default()).fit(&points);
@@ -1093,6 +1077,9 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         println!(" == y -> {:?}", yy);
         println!(" == x -> {:?}", xx);
         println!(" == id-> {:?}", id);
+        let maxy = Statistics::max(yy.iter());
+        let miny = Statistics::min(yy.iter());
+        println!("  y  max={} min={}", maxy, miny);
         // crear modelo lineal ---------------
 
         //let intercept = tuple.0;
@@ -1142,7 +1129,10 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         yy.clear();
         id.clear();
     }
-    println!("\n B DBSCAN: Puntos fuera de clusters {:?}", clustering.1); // [25.0, 80.0] doesn't belong to any cluster
+    println!(
+        "\n___\n B DBSCAN: Puntos fuera de clusters {:?}",
+        clustering.1
+    ); // [25.0, 80.0] doesn't belong to any cluster
     xx.clear();
     yy.clear();
     id.clear();
@@ -1154,6 +1144,9 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
     println!(" y: {:?}", yy);
     println!(" x: {:?}", xx);
     println!(" id:{:?}", id);
+    let maxy = Statistics::max(yy.iter());
+    let miny = Statistics::min(yy.iter());
+    println!("  y  max={} min={}", maxy, miny);
     let result = "B_puntos_fuera_por_DBSCAN.svg";
     graficar5(&xx, &yy, &x, &y, result.to_string());
 }
@@ -1188,7 +1181,7 @@ pub fn analisis() -> Result<(), Box<dyn Error>> {
         "\n Enrique R.P. Buendia Lozada 2022. Benemérita Universidad Autónoma de Puebla, México."
     );
     // Regresión lineal por clusters definidos por el algorítmo DBSCAN
-    println!(" DBSCAN (clasificar con radio de vecindad de 3 y zona de densidad de 2) de Inteligencia Artificial");
+    println!(" DBSCAN de Machine Learning de Inteligencia Artificial");
     println!("\n\n\n Ecuación con todos los datos originales del archivo de entrada...");
     if !model.coefficient.unwrap().is_nan() && !model.intercept.unwrap().is_nan() {
         println!("\n\n Coeficiente : {0}", model.coefficient.unwrap());
@@ -1217,10 +1210,10 @@ pub fn analisis() -> Result<(), Box<dyn Error>> {
     }
 
     // límites de los ejes de coordenadas de la gráfica
-    let lsx = x_values_f64.iter().cloned().fold(0. / 0., f64::max) + 0.00001; //maximo
-    let lix = x_values_f64.iter().cloned().fold(0. / 0., f64::min) - 0.00001; //minimo
-    let lsy = y_values_f64.iter().cloned().fold(0. / 0., f64::max) + 0.00001; //maximo
-    let liy = y_values_f64.iter().cloned().fold(0. / 0., f64::min) - 0.00001; //minimo
+    let lsx = Statistics::max(x_values_f64.iter()) + 1.0; //maximo
+    let lix = Statistics::min(x_values_f64.iter()) - 1.0; //minimo
+    let lsy = Statistics::max(y_values_f64.iter()) + 1.0; //maximo
+    let liy = Statistics::min(y_values_f64.iter()) - 1.0; //minimo
 
     let s1: Plot = Plot::new(actual).point_style(
         PointStyle::new()
@@ -1260,8 +1253,8 @@ pub fn analisis() -> Result<(), Box<dyn Error>> {
     bandas(&cxx, &cyy, "orig_".to_string(), &id_values);
     println!("\n ___... bandas tomando en cuenta DBSCAN ....___");
     // DBSCAN para identificar patrones no consecutivos de mediciones
-    f_dbscan(&x_values_f64, &y_values_f64, &id_values);
-    f_dbscan2(&x_values_f64, &y_values_f64, &id_values);
+    f_dbscan(&x_values_f64, &y_values_f64, &id_values); // epsilon via maxima curvatura
+    f_dbscan2(&x_values_f64, &y_values_f64, &id_values); // epsilon = 3
 
     Ok(())
 }
