@@ -22,3 +22,6 @@ donde:
 * archivo.csv         tiene los valores de y (variable dependiente), x (variable independiente) e id (identificador de la persona)
 * archivo_salida.txt  respuestas textuales de la aplicación que describe el análisis realizado.  
 
+Ejemplo:
+![image](https://user-images.githubusercontent.com/44904277/181934994-4e2cf4f1-ef89-4a9c-a38f-7778343e06ae.png)
+
