@@ -16,7 +16,7 @@ Las gráficas que se crean están en formato SVG y corresponden a cada cluster y
 Se describe una serie de errores que ayudan al usario a definir sobre que criterio debe elejir el modelo que desea usar.
 
 # USO
-Desde MSDOS escribir el comando    *eq.exe < archivo.csv > archivo_salida.txt*
+Desde MSDOS escribir el comando:    *___eq.exe < archivo.csv > archivo_salida.txt___*
 
 donde:
 * archivo.csv         tiene los valores de y (variable dependiente), x (variable independiente) e id (identificador de la persona)
