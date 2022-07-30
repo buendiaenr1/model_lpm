@@ -47,6 +47,7 @@ fn calcular_kn_distancia(xx: &Vec<f64>, yy: &Vec<f64>) -> f64 {
         }
     }
 
+    // calcular distancia euclidiana
     //println!("<<<< y {:?}", y);
     //println!("<<<< x {:?}", x);
     for i in 0..x.len() - 1 {
@@ -58,7 +59,7 @@ fn calcular_kn_distancia(xx: &Vec<f64>, yy: &Vec<f64>) -> f64 {
     }
     kn_dist.sort_by(cmp_f64);
     // println!(" distancias : {:?}", kn_dist);
-    // calcular las pendientes del vector ordenado
+    // calcular las pendientes del vector ordenado de las distancias
     let mut pendientes: Vec<f64> = Vec::new();
     for i in 0..kn_dist.len() - 1 {
         pendientes.push((kn_dist[i + 1] - kn_dist[i]) / ((i as f64 + 1.0) - i as f64));
@@ -80,7 +81,7 @@ fn calcular_kn_distancia(xx: &Vec<f64>, yy: &Vec<f64>) -> f64 {
             }
         }
     }
-    // buscar la pendiente 1%
+    // ordenar los vectores conjuntos de pendientes y distancia
     let mut epsi = 0f64;
     let mut m: Vec<f64> = Vec::new();
     let mut d: Vec<f64> = Vec::new();
@@ -93,6 +94,7 @@ fn calcular_kn_distancia(xx: &Vec<f64>, yy: &Vec<f64>) -> f64 {
     //println!(" pendientes.... {:?}", pendientes);
     //println!(" distancias.... {:?}", d);
     //println!(" pendientes.... {:?}", m);
+    // identificar
     for i in 0..m.len() {
         if m[i] >= 1.0 {
             epsi = d[i];
@@ -707,7 +709,7 @@ pub fn bandas(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
                 println!(">>> id correspondiente {:?}", id);
                 let maxy = Statistics::max(yy.iter());
                 let miny = Statistics::min(yy.iter());
-                println!("  y  max={} min={}", maxy, miny);
+                println!("  y_max={} y_min={}", maxy, miny);
 
                 let residuales = yy.clone();
 
@@ -790,7 +792,7 @@ pub fn bandas4(x: &Vec<f64>, y: &Vec<f64>, nombre: String, id_v: &Vec<String>) {
                 println!("B>>> id correspondiente {:?}", id);
                 let maxy = Statistics::max(yy.iter());
                 let miny = Statistics::min(yy.iter());
-                println!("  y  max={} min={}", maxy, miny);
+                println!("  y_max={} y_min={}", maxy, miny);
 
                 let residuales = yy.clone();
 
@@ -921,7 +923,7 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         println!(" == id-> {:?}", id);
         let maxy = Statistics::max(yy.iter());
         let miny = Statistics::min(yy.iter());
-        println!("  y  max={} min={}", maxy, miny);
+        println!("  y_max={} y_min={}", maxy, miny);
         // crear modelo lineal ---------------
 
         //let intercept = tuple.0;
@@ -988,7 +990,7 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
     println!(" id:{:?}", id);
     let maxy = Statistics::max(yy.iter());
     let miny = Statistics::min(yy.iter());
-    println!("  y  max={} min={}", maxy, miny);
+    println!("  y_max={} y_min={}", maxy, miny);
     let result = "puntos_fuera_por_DBSCAN.svg";
     graficar2(&xx, &yy, &x, &y, result.to_string());
 }
@@ -1079,7 +1081,7 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
         println!(" == id-> {:?}", id);
         let maxy = Statistics::max(yy.iter());
         let miny = Statistics::min(yy.iter());
-        println!("  y  max={} min={}", maxy, miny);
+        println!("  y_max={} y_min={}", maxy, miny);
         // crear modelo lineal ---------------
 
         //let intercept = tuple.0;
@@ -1146,7 +1148,7 @@ fn f_dbscan2(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
     println!(" id:{:?}", id);
     let maxy = Statistics::max(yy.iter());
     let miny = Statistics::min(yy.iter());
-    println!("  y  max={} min={}", maxy, miny);
+    println!("  y_max={} y_min={}", maxy, miny);
     let result = "B_puntos_fuera_por_DBSCAN.svg";
     graficar5(&xx, &yy, &x, &y, result.to_string());
 }
