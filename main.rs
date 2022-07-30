@@ -896,7 +896,7 @@ fn f_dbscan(x: &Vec<f64>, y: &Vec<f64>, id_v: &Vec<String>) {
 
     // radio de vecindad = 2.0=eps
     // El número mínimo de puntos necesarios para formar una región densa = 3=min_samples
-    let min_s = 3i32;
+    let min_s = 4i32;
     let epsi = calcular_kn_distancia(&x, &y); // estimar epsilon por curvatura maxima
 
     let clustering =
