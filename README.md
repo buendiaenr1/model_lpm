@@ -23,7 +23,8 @@ donde:
 * salida.txt  respuestas textuales de la aplicación que describe el análisis realizado.  
 
 Ejemplo:
-![image](https://user-images.githubusercontent.com/44904277/181934994-4e2cf4f1-ef89-4a9c-a38f-7778343e06ae.png)
+![image](https://github.com/user-attachments/assets/8adc1d43-a2ea-46b4-b5cb-3c82de926b8a)
+
 
 # Usar después juntarGG.exe
 ### para ver más fásilmente como se distribuye la intensidad usando frecuencia cardiaca
