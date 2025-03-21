@@ -25,6 +25,6 @@ donde:
 Ejemplo:
 ![image](https://user-images.githubusercontent.com/44904277/181934994-4e2cf4f1-ef89-4a9c-a38f-7778343e06ae.png)
 
-# Usar después juntarGG
+# Usar después juntarGG.exe
 ### para ver más fásilmente como se distribuye la intensidad usando frecuencia cardiaca
 ![todo](https://github.com/user-attachments/assets/fae7d215-b01e-485f-8473-c4879d5812cd)
