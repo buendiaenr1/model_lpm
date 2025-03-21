@@ -1,0 +1,12 @@
+[package]
+name = "juntarGG"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+plotters = "0.3.0"
+image = "0.23.14"
+
+
+csv = "1.1.6"
