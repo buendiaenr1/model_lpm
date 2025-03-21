@@ -16,11 +16,11 @@ Las gráficas que se crean están en formato SVG y corresponden a cada cluster y
 Se describe una serie de errores que ayudan al usario a definir sobre que criterio debe elejir el modelo que desea usar.
 
 # USO
-Desde MSDOS escribir el comando:    *___eq.exe < archivo.csv > archivo_salida.txt___*
+Desde MSDOS escribir el comando:    *___eq.exe < archivo.csv > salida.txt___*
 
 donde:
 * archivo.csv         tiene los valores de y (variable dependiente), x (variable independiente) e id (identificador de la persona)
-* archivo_salida.txt  respuestas textuales de la aplicación que describe el análisis realizado.  
+* salida.txt  respuestas textuales de la aplicación que describe el análisis realizado.  
 
 Ejemplo:
 ![image](https://user-images.githubusercontent.com/44904277/181934994-4e2cf4f1-ef89-4a9c-a38f-7778343e06ae.png)
