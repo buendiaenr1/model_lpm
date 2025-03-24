@@ -1,6 +1,6 @@
 # model_lpm
-Creación de modelos de regresión lineal con el mínimo de error en latidos por minuto (lpm) respecto a las mediciones reales
-Usar la **carpeta todo**
+Creación de modelos de regresión lineal con el mínimo de error en latidos por minuto (lpm) respecto a las mediciones reales.
+Usar la ###**carpeta todo**###
 
 ### DBSCAN
 Se usa BDSCAN de machine learning para crear clusters de la información leida:
