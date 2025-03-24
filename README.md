@@ -28,4 +28,6 @@ Ejemplo:
 
 # Usar después juntarGG.exe
 ### para ver más fásilmente como se distribuye la intensidad usando frecuencia cardiaca
-![todo](https://github.com/user-attachments/assets/fae7d215-b01e-485f-8473-c4879d5812cd)
+![plot](https://github.com/user-attachments/assets/56d7e62a-0a61-4a38-9c67-fe902c121eaf)
+![todo](https://github.com/user-attachments/assets/3dc4cd55-9fb5-4a9c-b3f1-de6bb2e6932b)
+
