@@ -27,7 +27,7 @@ Ejemplo:
 ![image](https://github.com/user-attachments/assets/8adc1d43-a2ea-46b4-b5cb-3c82de926b8a)
 
 
-# Usar después juntarGG.exe
+# Usar después juntarGG.exe de la carpeta todo
 junto con los archivos: **salida.txt y fc.csv**, para tener como resultado las 2 graficas siguientes
 ### para ver más fásilmente como se distribuye la intensidad usando frecuencia cardiaca
 ![plot](https://github.com/user-attachments/assets/56d7e62a-0a61-4a38-9c67-fe902c121eaf)
